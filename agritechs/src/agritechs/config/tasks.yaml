@@ -1,0 +1,155 @@
+# ── Tasks Module 1 ───────────────────────────────────────────
+
+task_decouverte_structure:
+  description: >
+    Utilise discover_database_structure pour obtenir le schéma (colonnes)
+    des tables 'crops' et 'farmer_notes'.
+    Retourne uniquement :
+    crops(id, user_id, name, type, variety, area, planting_date, sowing_start, sowing_end, harvest_start, harvest_end, selling_start, selling_end, status, progress,
+          image_url, price_recorded_date, market, quantity, price, created_at)
+    farmer_notes(id, farmer_name, crop_name, price, zone, recorded_at, content,
+                 pdf_name, status, knowledge_base_stored, created_at)
+    Ne cherche PAS de données, ne fais PAS d'autre action.
+  expected_output: >
+    Le schéma exact des deux tables sous la forme :
+    crops(id, user_id, name, type, variety, area, planting_date, sowing_start, sowing_end, harvest_start, harvest_end, selling_start, selling_end, status, progress,
+          image_url, price_recorded_date, market, quantity, price, created_at)
+    farmer_notes(id, farmer_name, crop_name, price, zone, recorded_at, content,
+                 pdf_name, status, knowledge_base_stored, created_at)
+  agent: analyste_sql
+
+task_extraction_sql:
+  description: >
+    Demande de l'utilisateur : "{phrase_utilisateur}"
+    Culture ciblée : {culture} | Zone ciblée : {zone}
+
+    ÉTAPES OBLIGATOIRES dans cet ordre :
+    1. Construis la requête SQL adaptée à la demande en utilisant ILIKE.
+    2. EXÉCUTE immédiatement cette requête avec query_sql_database.
+    3. Retourne les données brutes reçues (dictionnaires).
+
+    RÈGLES ABSOLUES ET EXEMPLES :
+    - Pour toute demande de PRIX ou de MARCHÉ d'une culture dans une zone, tu DOIS interroger les deux tables 'farmer_notes' et 'crops' en combinant les résultats.
+      La colonne 'variety' et la colonne 'market' de la table 'crops' peuvent contenir la zone (ex: 'ouest').
+      Utilise de préférence un UNION ALL comme l'exemple ci-dessous pour ne rater aucune donnée réelle présente dans l'une ou l'autre table :
+      SELECT crop_name AS name, price, zone, recorded_at, 'farmer_notes' AS source FROM farmer_notes WHERE crop_name ILIKE '%{culture}%' AND zone ILIKE '%{zone}%' UNION ALL SELECT name, price, variety AS zone, price_recorded_date AS recorded_at, 'crops' AS source FROM crops WHERE name ILIKE '%{culture}%' AND (variety ILIKE '%{zone}%' OR market ILIKE '%{zone}%')
+    - Si l'utilisateur demande semis/récolte/plantation/période/calendrier/dates → requête directe sur la table 'crops' :
+      SELECT name, variety, planting_date, sowing_start, sowing_end, harvest_start, harvest_end, selling_start, selling_end, status, progress, market, price, price_recorded_date FROM crops WHERE name ILIKE '%{culture}%'
+    - Si l'utilisateur demande des notes terrain, maladies, traitements → requête directe sur la table 'farmer_notes' :
+      SELECT farmer_name, crop_name, zone, content, recorded_at FROM farmer_notes WHERE crop_name ILIKE '%{culture}%' AND zone ILIKE '%{zone}%'
+    - Utilise TOUJOURS ILIKE avec des wildcards (%) pour des recherches robustes (ex: %{culture}%)
+    - Tu DOIS appeler la fonction/outil query_sql_database. Ne retourne JAMAIS du texte SQL brut sans l'exécuter.
+    - Si le résultat de la requête SQL est vide ou s'il n'y a aucune ligne retournée, renvoie le texte exact : SQL_VIDE
+    - Si la demande effectuée par l'utilisateur ne se trouve pas dans le base de donnée sql, consulte les pdf de la base de connaise 'knowlegebase', si tu n'y trouves rien, alors retourne DONNEE_INTROUVABLE.
+ 
+  expected_output: >
+    Les données SQL brutes sous forme de dictionnaire, par exemple :
+    [{'name': 'Tomate', 'price': 350.0, 'zone': 'Ouest', 'recorded_at': '2026-06-05', 'source': 'crops'}]
+    Ou le texte exact SQL_VIDE si rien n'est trouvé.
+  context: [task_decouverte_structure]
+  agent: analyste_sql
+
+task_centralisation_et_rag:
+  description: >
+    Demande de l'utilisateur : "{phrase_utilisateur}"
+
+    Les données SQL de la tâche précédente sont disponibles dans le contexte.
+
+    RÈGLE 1 — Si les données SQL sont présentes, valides et non vides :
+      Utilise ces données. Tu peux également appeler rag_dossier_tool si la question demande des précisions ou des conseils techniques complémentaires.
+
+    RÈGLE 2 — Si les données SQL valent SQL_VIDE ou ne contiennent pas directement l'information :
+      Appelle TOUJOURS rag_dossier_tool avec comme query : "{phrase_utilisateur}" pour interroger la base de connaissances Cloudinary.
+
+    RÈGLE 3 — Si le résultat de rag_dossier_tool ne contient pas l'information demandée (ex: pas de prix précis pour la zone) :
+      Appelle l'outil scrape_agricultural_prices(culture, zone) pour faire une recherche en temps réel sur le web, s'il s'agit d'une demande de prix agricole.
+      
+    RÈGLE 4 — Si après avoir essayé SQL, RAG et le Web, aucune information n'est trouvée, retourne alors : DONNEE_INTROUVABLE
+  expected_output: >
+    Un dictionnaire de données propre contenant uniquement ce qui a été demandé.
+    Exemple pour un prix : {'culture': 'Tomate', 'zone': 'Ouest', 'price': 450.0, 'recorded_at': '2026-04-24'}
+    Ou du texte RAG extrait de la base de connaissances Cloudinary.
+    Ou DONNEE_INTROUVABLE.
+  context: [task_extraction_sql]
+  agent: agent_backend
+
+task_generation_conseiller:
+  description: >
+    Rédige la réponse finale à : "{phrase_utilisateur}"
+
+    Les données à utiliser sont dans le contexte (tâche précédente).
+
+    RÈGLES ABSOLUES :
+    - Si le contexte contient DONNEE_INTROUVABLE ou si aucune donnée pertinente n'a été trouvée dans les bases : dis clairement et poliment que nous n'avons pas trouvé de données correspondant à la demande. N'invente et ne simule rien.
+    - Réponds UNIQUEMENT à la question qui a été posée, sans déborder sur d'autres sujets.
+    - Utilise UNIQUEMENT les chiffres et données présents dans le contexte, tirés des bases de connaissances.
+    - N'invente AUCUN prix, AUCUNE date, AUCUN chiffre, ni AUCUN conseil non sourcé.
+    - INTERDICTION des listes à puces ou tirets.
+    - Rédige en paragraphes fluides, comme un conseiller agricole qui parle à un agriculteur.
+    - Intègre l'unité (FCFA/kg) et la date de relevé si disponibles.
+    - Si plusieurs prix sont disponibles, cite la moyenne ou la fourchette.
+  expected_output: >
+    Un ou deux paragraphes fluides en français, sans liste, citant les données
+    exactes du contexte. Exemple : "La tomate se vend actuellement à 450 FCFA
+    le kilogramme dans la région Ouest, selon les relevés du 24 avril 2026."
+  context: [task_centralisation_et_rag]
+  agent: conseiller_agricole
+
+# ── Tasks Module 2 ───────────────────────────────────────────
+
+task_fetch_pdfs:
+  description: >
+    Culture : {culture} | Zone : {zone} |
+    Période : {date_debut} → {date_fin}
+
+    1. Utilise fetch_pdfs_cloudinary pour récupérer tous les PDFs
+       correspondant à cette culture, zone et période.
+    2. Retourne la liste JSON des PDFs trouvés avec leurs URLs.
+    3. Si aucun PDF trouvé, retourne : AUCUN_PDF
+  expected_output: >
+    Liste JSON des PDFs trouvés avec url, nom, type et date.
+    Ou le texte exact AUCUN_PDF.
+  agent: extracteur_pdfs
+
+task_extract_prices:
+  description: >
+    Culture : {culture} | Zone : {zone}
+
+    Tu as reçu la liste des PDFs dans le contexte (task_fetch_pdfs).
+
+    ÉTAPES :
+    1. Pour chaque PDF dans la liste, appelle extract_prices_from_pdf
+       avec l'URL du PDF, la culture et la zone.
+    2. Collecte tous les prix extraits de tous les PDFs.
+    3. Appelle aussi scrape_agricultural_prices pour récupérer
+       les prix depuis le web.
+    4. Retourne un JSON combinant tous les prix trouvés
+       (PDFs + web) avec leurs dates et sources.
+
+    Si aucun prix trouvé nulle part, retourne : PRIX_VIDE
+  expected_output: >
+    JSON combiné contenant tous les prix extraits des PDFs et du web.
+    Ou PRIX_VIDE si aucun résultat.
+  context: [task_fetch_pdfs]
+  agent: extracteur_pdfs
+
+task_aggregate_prices:
+  description: >
+    Culture : {culture} | Zone : {zone}
+
+    Le contexte de task_extract_prices contient soit PRIX_VIDE, soit des données JSON.
+
+    RÈGLE UNIQUE ET ABSOLUE :
+    Tu ne dois appeler AUCUN outil.
+    Tu dois UNIQUEMENT retourner du texte JSON.
+
+    Si le contexte contient PRIX_VIDE ou AUCUN_PDF, retourne exactement ce texte :
+    {{"status": "VIDE", "culture": "{culture}", "zone": "{zone}", "total_points": 0, "dataset": []}}
+
+    Si le contexte contient des données JSON avec des prix :
+    Analyse les prix, calcule la moyenne par date, et retourne :
+    {{"status": "OK", "culture": "{culture}", "zone": "{zone}", "total_points": N, "dataset": [{{"date": "YYYY-MM-DD", "prix_moyen_fcfa_kg": 000, "nb_sources": N}}]}}
+  expected_output: >
+    Un texte JSON valide uniquement. Aucun outil appelé.
+  context: [task_extract_prices]
+  agent: aggregateur_prix

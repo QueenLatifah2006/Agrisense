@@ -1,0 +1,1 @@
+fetch('http://127.0.0.1:3000/api/ai/prices-dataset', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer test' }, body: JSON.stringify({culture: 'Tomate', zone: 'Ouest'}) }).then(r => r.text()).then(console.log).catch(console.error);

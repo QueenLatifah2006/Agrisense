@@ -1,0 +1,23 @@
+{
+  "status": "OK",
+  "culture": "Tomate",
+  "zone": "Oues",
+  "total_points": 3,
+  "dataset": [
+    {
+      "date": "2026-02",
+      "prix_moyen_fcfa_kg": 1500.0,
+      "nb_sources": 1
+    },
+    {
+      "date": "2026-03",
+      "prix_moyen_fcfa_kg": 125.0,
+      "nb_sources": 1
+    },
+    {
+      "date": "2026-04-24",
+      "prix_moyen_fcfa_kg": 450.0,
+      "nb_sources": 1
+    }
+  ]
+}

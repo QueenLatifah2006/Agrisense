@@ -1,0 +1,44 @@
+# Monorepo Ignored Files
+
+# Node / Next.js / Backend
+node_modules/
+dist/
+.next/
+*.log
+
+# Python / AI (agritechs)
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+.env
+.DS_Store
+
+# Fichiers volumineux (Modèles IA)
+*.bin
+*.model
+*.pt
+*.pth
+*.onnx
+
+# Flutter / App (agritechia)
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+
+# Variables d'environnement / Sécurité
+.env*
+!.env.example
+*.sqlite3
+
+# Base de données vectorielle ChromaDB
+chroma_db/
+knowledge/chroma.sqlite3
+knowledge/*/

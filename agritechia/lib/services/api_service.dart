@@ -17,7 +17,7 @@ class ApiService {
       }
       return "http://localhost:3000/api";
     } else {
-      return "http://192.168.1.199:3000/api";
+      return "http://agrisense-7oq5.onrender.com/api";
     }
   }
   

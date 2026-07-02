@@ -53,7 +53,7 @@ export function Header({
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch('http://localhost:3001/api/auth/me', {
+        const response = await fetch('/api/auth/me', {
           headers: { 
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

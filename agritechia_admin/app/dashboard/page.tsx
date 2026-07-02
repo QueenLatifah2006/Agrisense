@@ -273,7 +273,7 @@ useEffect(() => {
     try {
       const token = localStorage.getItem('token');
       const cropQuery = selectedCrop.name && selectedCrop.name !== 'dummy' ? `?crop=${encodeURIComponent(selectedCrop.name)}` : '';
-      const response = await fetch(`http://localhost:3000/api/ai/advanced-charts-stats${cropQuery}`, {
+      const response = await fetch(`/api/ai/advanced-charts-stats${cropQuery}`, {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -300,7 +300,7 @@ useEffect(() => {
       const token = localStorage.getItem('token');
       // Extract clean zone name
       const region = selectedZone.name.split(' (')[0];
-      const response = await fetch('http://localhost:3000/api/ai/prices-dataset', {
+      const response = await fetch('/api/ai/prices-dataset', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

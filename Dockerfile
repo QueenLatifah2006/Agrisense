@@ -1,5 +1,5 @@
 # Utiliser une image de base Linux Debian contenant Node.js
-FROM node:22-bullseye-slim
+FROM node:22-bookworm-slim
 
 # 1. Installer Python 3, pip, ffmpeg (pour l'audio) et les outils de compilation
 RUN apt-get update && apt-get install -y \

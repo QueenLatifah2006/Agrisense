@@ -72,7 +72,7 @@ interface CropRecord {
   quantity: number;
   stage: string;
   health: number; // 0-100
-  status: 'Critical' | 'Alert' | 'Normal' | 'Great';
+  status: 'Critical' | 'Alert' | 'Normal' | 'Great' | 'blocked' | 'active';
   market?: string;
 }
 

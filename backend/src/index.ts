@@ -48,8 +48,6 @@ app.use(cors({
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-import path from 'path';
-app.use('/uploads', express.static(path.join(process.cwd(), 'public/uploads')));
 
 // Routes API
 app.use('/api/auth', authRoutes);

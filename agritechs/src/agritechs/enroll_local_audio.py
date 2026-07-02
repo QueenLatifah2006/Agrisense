@@ -45,8 +45,8 @@ def main():
         
         # Determine metadata based on filename convention or hardcoded logic
         # Determine metadata based on filename convention
-        # If the question is 'prix_djindja.wav', the response should be uploaded to Cloudinary as 'reponse_prix_djindja.wav'
-        response_url = f"https://res.cloudinary.com/dn1badfrl/video/upload/reponse_{wav_file}"
+        # If the question is 'prix_djindja.wav', the response should be placed in backend/public/uploads/conversation/audios/reponse_prix_djindja.wav
+        response_url = f"http://localhost:3000/uploads/conversation/audios/reponse_{wav_file}"
         
         try:
             speech, rate = librosa.load(file_path, sr=16000)

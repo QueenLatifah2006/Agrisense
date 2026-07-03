@@ -39,5 +39,5 @@ RUN npm run build
 # Exposer le port par défaut (Render écrasera avec sa propre variable PORT si besoin)
 EXPOSE 3000
 
-# Lancer le serveur de production Node.js
-CMD ["npm", "start"]
+# Lancer le serveur de production Node.js et l'API Python en parallèle
+CMD sh -c "cd /app/agritechs && /app/agritechs/.venv/bin/python -m uvicorn src.agritechs.ia_api.main:app --host 0.0.0.0 --port 8000 & cd /app/backend && npm start"

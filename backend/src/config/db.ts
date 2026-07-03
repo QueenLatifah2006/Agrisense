@@ -7,7 +7,7 @@ dotenv.config();
 // Configuration de la connexion PostgreSQL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || undefined,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: { rejectUnauthorized: false },
   connectionTimeoutMillis: 3000, 
 });
 

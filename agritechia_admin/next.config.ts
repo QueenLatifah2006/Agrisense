@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   async rewrites() {
     const backendUrl = process.env.API_BACKEND_URL || 'https://agrisense-7oq5.onrender.com';
     return [

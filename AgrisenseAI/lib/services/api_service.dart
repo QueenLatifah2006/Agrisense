@@ -5,20 +5,7 @@ import 'package:flutter/foundation.dart';
 class ApiService {
   // URL dynamique : localhost pour le Web, 10.0.2.2 pour l'émulateur Android
   static String get baseUrl {
-    if (kIsWeb) {
-      final String origin = Uri.base.origin;
-      if (origin.contains('localhost') || origin.contains('127.0.0.1')) {
-        if (!origin.contains(':3000')) {
-          return "http://localhost:3000/api";
-        }
-      }
-      if (origin.startsWith('http')) {
-        return "$origin/api";
-      }
-      return "http://localhost:3000/api";
-    } else {
-      return "http://agrisense-7oq5.onrender.com/api";
-    }
+    return "https://agrisense-7oq5.onrender.com/api";
   }
   
   static String? _token;

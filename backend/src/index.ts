@@ -18,7 +18,7 @@ const PORT = parseInt(process.env.PORT || '3000');
 await initializeDatabase();
 
 app.use('/api/ia', createProxyMiddleware({
-  target: 'http://localhost:8000',
+  target: process.env.PYTHON_API_URL || 'http://localhost:8000',
   changeOrigin: true,
   on: {
     error: (err, req, res: any) => {

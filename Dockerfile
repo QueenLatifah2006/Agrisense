@@ -40,4 +40,5 @@ RUN npm run build
 EXPOSE 3000
 
 # Lancer le serveur de production Node.js et l'API Python en parallèle
-CMD sh -c "cd /app/agritechs && /app/agritechs/.venv/bin/python -m uvicorn src.agritechs.ia_api.main:app --host 0.0.0.0 --port 8000 & cd /app/backend && npm start"
+# Lancer UNIQUEMENT le serveur de production Node.js (L'IA sera sur un autre service)
+CMD ["npm", "start"]

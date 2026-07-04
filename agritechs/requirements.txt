@@ -18,6 +18,5 @@ requests>=2.31.0
 sentence-transformers
 
 
-
-
-
+fastapi>=0.100.0
+uvicorn>=0.20.0

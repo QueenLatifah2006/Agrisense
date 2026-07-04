@@ -1,0 +1,20 @@
+{
+    "sqltools.connections": [
+        {
+            "pgOptions": {
+                "ssl": {
+                    "rejectUnauthorized": true
+                }
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "dpg-d933690k1i2s73dgorkg-a.oregon-postgres.render.com",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "Base Render",
+            "database": "agritechs",
+            "username": "agritechs_user",
+            "password": "PMyewkuO1VzKf8P5EEfh7qnnnXpQskqY"
+        }
+    ]
+}
